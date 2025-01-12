@@ -7,7 +7,7 @@ $halamanSaatIni = isset($_GET['halaman']) ? (int)$_GET['halaman'] : 1;
 $awalData = ($halamanSaatIni - 1) * $dataPerHalaman;
 
 // Query untuk mendapatkan jumlah total data
-$sqlTotal = "SELECT COUNT(*) AS total FROM article";
+$sqlTotal = "SELECT COUNT(*) AS total FROM gallery";
 $hasilTotal = $conn->query($sqlTotal);
 $totalData = $hasilTotal->fetch_assoc()['total'];
 $totalHalaman = ceil($totalData / $dataPerHalaman);
@@ -20,7 +20,7 @@ function buildPaginationUrl($page) {
 }
 
 // Query untuk mendapatkan data sesuai pagination
-$sql = "SELECT * FROM article ORDER BY tanggal DESC LIMIT $awalData, $dataPerHalaman";
+$sql = "SELECT * FROM gallery ORDER BY tanggal DESC LIMIT $awalData, $dataPerHalaman";
 $hasil = $conn->query($sql);
 
 $no = $awalData + 1;
@@ -32,26 +32,18 @@ while ($row = $hasil->fetch_assoc()) {
 <div class="container">
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-secondary mb-2" data-bs-toggle="modal" data-bs-target="#modalTambah">
-        <i class="bi bi-plus-lg"></i> Tambah Article
+        <i class="bi bi-plus-lg"></i> Tambah Gallery
     </button>
     <!-- Awal Modal Tambah-->
     <div class="modal fade" id="modalTambah" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Tambah Article</h1>
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Tambah Gallery</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="post" action="" enctype="multipart/form-data">
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="formGroupExampleInput" class="form-label">Judul</label>
-                            <input type="text" class="form-control" name="judul" placeholder="Tuliskan Judul Artikel" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="floatingTextarea2">Isi</label>
-                            <textarea class="form-control" placeholder="Tuliskan Isi Artikel" name="isi" required></textarea>
-                        </div>
                         <div class="mb-3">
                             <label for="formGroupExampleInput2" class="form-label">Gambar</label>
                             <input type="file" class="form-control" name="gambar">
@@ -72,15 +64,14 @@ while ($row = $hasil->fetch_assoc()) {
                 <thead class="table-dark">
                     <tr>
                         <th>No</th>
-                        <th class="w-25">Judul</th>
-                        <th class="w-75">Isi</th>
-                        <th class="w-25">Gambar</th>
+                        <th class="">Tanggal</th>
+                        <th class="">Gambar</th>
                         <th class="w-25">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    $sql = "SELECT * FROM article ORDER BY tanggal DESC LIMIT $awalData, $dataPerHalaman";
+                    $sql = "SELECT * FROM gallery ORDER BY tanggal DESC LIMIT $awalData, $dataPerHalaman";
                     $hasil = $conn->query($sql);
 
                     $no = $awalData + 1;
@@ -89,21 +80,17 @@ while ($row = $hasil->fetch_assoc()) {
                         <tr>
                             <td><?= $no++ ?></td>
                             <td>
-                                <strong><?= $row["judul"] ?></strong>
                                 <br>pada : <?= $row["tanggal"] ?>
                                 <br>oleh : <?= $row["username"] ?>
                             </td>
-                            <td><?= $row["isi"] ?></td>
                             <td>
-                                <?php
-                                if ($row["gambar"] != '') {
-                                    if (file_exists('img/' . $row["gambar"] . '')) {
-                                ?>
-                                        <img src="img/<?= $row["gambar"] ?>" width="100">
-                                <?php
-                                    }
-                                }
-                                ?>
+                                <?php if ($row["gambar"] != '' && file_exists('img/' . $row["gambar"])): ?>
+                                    <img src="img/<?= $row["gambar"] ?>" width="100" 
+                                        class="img-thumbnail" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#modalGambarBesar" 
+                                        onclick="tampilkanGambarBesar('img/<?= $row["gambar"] ?>')">
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <a href="#" title="edit" class="badge rounded-pill text-bg-success" data-bs-toggle="modal" data-bs-target="#modalEdit<?= $row["id"] ?>"><i class="bi bi-pencil"></i></a>
@@ -114,20 +101,11 @@ while ($row = $hasil->fetch_assoc()) {
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Edit Article</h1>
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Edit Gallery</h1>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <form method="post" action="" enctype="multipart/form-data">
                                                 <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label for="formGroupExampleInput" class="form-label">Judul</label>
-                                                        <input type="hidden" name="id" value="<?= $row["id"] ?>">
-                                                        <input type="text" class="form-control" name="judul" placeholder="Tuliskan Judul Artikel" value="<?= $row["judul"] ?>" required>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="floatingTextarea2">Isi</label>
-                                                        <textarea class="form-control" placeholder="Tuliskan Isi Artikel" name="isi" required><?= $row["isi"] ?></textarea>
-                                                    </div>
                                                     <div class="mb-3">
                                                         <label for="formGroupExampleInput2" class="form-label">Ganti Gambar</label>
                                                         <input type="file" class="form-control" name="gambar">
@@ -161,13 +139,13 @@ while ($row = $hasil->fetch_assoc()) {
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Konfirmasi Hapus Article</h1>
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Konfirmasi Hapus Gallery</h1>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <form method="post" action="" enctype="multipart/form-data">
                                                 <div class="modal-body">
                                                     <div class="mb-3">
-                                                        <label for="formGroupExampleInput" class="form-label">Yakin akan menghapus artikel "<strong><?= $row["judul"] ?></strong>"?</label>
+                                                        <label for="formGroupExampleInput" class="form-label">Yakin akan menghapus artikel "<strong><?= $row["id"] ?></strong>"?</label>
                                                         <input type="hidden" name="id" value="<?= $row["id"] ?>">
                                                         <input type="hidden" name="gambar" value="<?= $row["gambar"] ?>">
                                                     </div>
@@ -188,7 +166,7 @@ while ($row = $hasil->fetch_assoc()) {
                     }
                     ?>
                 </tbody>
-                </table>
+            </table>
             <!-- Bootstrap pagination -->
             <nav aria-label="Page navigation">
             <ul class="pagination justify-content-end">
@@ -220,18 +198,34 @@ while ($row = $hasil->fetch_assoc()) {
                 </li>
             </ul>
             </nav>
-            </table>
         </div>
     </div>
 </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal untuk menampilkan gambar besar -->
+<div class="modal fade" id="modalGambarBesar" tabindex="-1" aria-labelledby="modalGambarBesarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalGambarBesarLabel">Gambar Besar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="gambarBesar" src="" class="img-fluid" alt="Gambar besar">
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <?php
 include "upload_foto.php";
 
 //jika tombol simpan diklik
 if (isset($_POST['simpan'])) {
-    $judul = $_POST['judul'];
-    $isi = $_POST['isi'];
     $tanggal = date("Y-m-d H:i:s");
     $username = $_SESSION['username'];
     $gambar = '';
@@ -251,7 +245,7 @@ if (isset($_POST['simpan'])) {
 		        //jika true maka message berisi pesan error, tampilkan dalam alert
             echo "<script>
                 alert('" . $cek_upload['message'] . "');
-                document.location='admin.php?page=article';
+                document.location='admin.php?page=gallery';
             </script>";
             die;
         }
@@ -270,35 +264,33 @@ if (isset($_POST['simpan'])) {
             unlink("img/" . $_POST['gambar_lama']);
         }
 
-        $stmt = $conn->prepare("UPDATE article 
+        $stmt = $conn->prepare("UPDATE gallery 
                                 SET 
-                                judul =?,
-                                isi =?,
                                 gambar = ?,
                                 tanggal = ?,
                                 username = ?
                                 WHERE id = ?");
 
-        $stmt->bind_param("sssssi", $judul, $isi, $gambar, $tanggal, $username, $id);
+        $stmt->bind_param("sssi", $gambar, $tanggal, $username, $id);
         $simpan = $stmt->execute();
     } else {
 		    //jika tidak ada id, lakukan insert data baru
-        $stmt = $conn->prepare("INSERT INTO article (judul,isi,gambar,tanggal,username)
-                                VALUES (?,?,?,?,?)");
+        $stmt = $conn->prepare("INSERT INTO gallery (gambar,tanggal,username)
+                                VALUES (?,?,?)");
 
-        $stmt->bind_param("sssss", $judul, $isi, $gambar, $tanggal, $username);
+        $stmt->bind_param("sss", $gambar, $tanggal, $username);
         $simpan = $stmt->execute();
     }
 
     if ($simpan) {
         echo "<script>
             alert('Simpan data sukses');
-            document.location='admin.php?page=article';
+            document.location='admin.php?page=gallery';
         </script>";
     } else {
         echo "<script>
             alert('Simpan data gagal');
-            document.location='admin.php?page=article';
+            document.location='admin.php?page=gallery';
         </script>";
     }
 
@@ -316,7 +308,7 @@ if (isset($_POST['hapus'])) {
         unlink("img/" . $gambar);
     }
 
-    $stmt = $conn->prepare("DELETE FROM article WHERE id =?");
+    $stmt = $conn->prepare("DELETE FROM gallery WHERE id =?");
 
     $stmt->bind_param("i", $id);
     $hapus = $stmt->execute();
@@ -324,12 +316,12 @@ if (isset($_POST['hapus'])) {
     if ($hapus) {
         echo "<script>
             alert('Hapus data sukses');
-            document.location='admin.php?page=article';
+            document.location='admin.php?page=gallery';
         </script>";
     } else {
         echo "<script>
             alert('Hapus data gagal');
-            document.location='admin.php?page=article';
+            document.location='admin.php?page=gallery';
         </script>";
     }
 
@@ -337,3 +329,8 @@ if (isset($_POST['hapus'])) {
     $conn->close();
 }
 ?>
+<script>
+    function tampilkanGambarBesar(gambar) {
+        document.getElementById("gambarBesar").src = gambar;
+    }
+</script>
